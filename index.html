@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Happy 22nd Birthday baby! 💖</title>
+    <style>
+        /* === 00. BASE & THEME === */
+        :root {
+            --pink-bg: #fdf0f3;
+            --pink-dark: #b76e79;
+            --text-main: #4a4a4a;
+            --text-light: #8c7378;
+            --paper: #fbf5eb;
+        }
+        body {
+            margin: 0; padding: 0;
+            background-color: var(--pink-bg);
+            font-family: 'Georgia', serif; 
+            color: var(--text-main);
+            overflow-x: hidden;
+            transition: background-color 1.5s ease;
+        }
+        body.dark-mode {
+            background-color: #1a1516;
+            color: #eac8d0;
+        }
+        
+        /* === MUSIC TOGGLE === */
+        #music-toggle {
+            position: fixed; top: 20px; right: 20px;
+            background: rgba(255,255,255,0.7);
+            border: 1px solid var(--pink-dark);
+            border-radius: 50%; width: 40px; height: 40px;
+            cursor: pointer; z-index: 1000;
+            display: flex; justify-content: center; align-items: center;
+            font-size: 1.2rem; display: none;
+        }
+
+        /* === 01. ENVELOPE SECTION === */
+        #envelope-screen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: var(--pink-bg);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 100; transition: opacity 1.5s ease, visibility 1.5s;
+        }
+        .envelope-hint {
+            font-size: 1.2rem; font-style: italic; color: var(--pink-dark);
+            margin-bottom: 30px; animation: fadeIn 2s ease;
+        }
+        .envelope-wrapper {
+            position: relative; width: 300px; height: 200px;
+            background-color: #f4d4d9; border-radius: 5px;
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1); cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .envelope-wrapper:hover { transform: translateY(-5px); }
+        .envelope-flap {
+            position: absolute; top: 0; left: 0;
+            border-left: 150px solid transparent; border-right: 150px solid transparent;
+            border-top: 100px solid #eebbcc; z-index: 4;
+            transform-origin: top; transition: transform 0.8s ease;
+        }
+        .envelope-front {
+            position: absolute; bottom: 0; left: 0;
+            border-left: 150px solid #eac8d0; border-right: 150px solid #eac8d0;
+            border-bottom: 100px solid #eebbcc; z-index: 3;
+        }
+        .envelope-wrapper.open .envelope-flap { transform: rotateX(180deg); z-index: 1; }
+
+        /* === 02. LETTER SECTION === */
+        #letter-section {
+            display: flex; flex-direction: column; align-items: center;
+            padding: 80px 20px; opacity: 0; visibility: hidden;
+            transition: opacity 2s ease;
+        }
+        .paper-letter {
+            width: 100%; max-width: 500px; background-color: var(--paper);
+            padding: 50px 40px; filter: drop-shadow(0px 20px 25px rgba(0,0,0,0.1));
+            box-shadow: inset 0 0 30px rgba(139, 90, 43, 0.1);
+            line-height: 1.9; font-size: 1.1rem; color: #3e322f;
+        }
+        .letter-content p {
+            opacity: 0; transform: translateY(20px);
+            transition: opacity 1.5s ease, transform 1.5s ease;
+        }
+        .letter-content p.visible { opacity: 1; transform: translateY(0); }
+        .handwriting { font-family: 'Brush Script MT', cursive; font-size: 1.5rem; color: var(--pink-dark); }
+        
+        .scroll-hint {
+            margin-top: 60px; font-style: italic; color: var(--pink-dark);
+            opacity: 0; transition: opacity 1s; font-size: 1.1rem;
+        }
+
+        /* === 03. CANDLE SECTION === */
+        #candle-section {
+            height: 100vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center;
+            opacity: 0; transition: opacity 1.5s ease;
+        }
+        .candle-wrapper { position: relative; cursor: pointer; margin-top: 40px; }
+        .candle {
+            width: 45px; height: 140px; border-radius: 4px;
+            background: linear-gradient(to right, #f4d4d9, #fbe6ea, #f4d4d9);
+            box-shadow: 0px 5px 10px rgba(0,0,0,0.2);
+        }
+        body.dark-mode .candle { background: linear-gradient(to right, #6b4c52, #8c6870, #6b4c52); }
+        .flame {
+            width: 24px; height: 42px; position: absolute;
+            top: -42px; left: 50%; transform: translateX(-50%);
+            background: radial-gradient(ellipse at bottom, #fff 10%, #ffe066 40%, #ff9e3d 100%);
+            border-radius: 50% 50% 20% 20%;
+            box-shadow: 0 0 25px 10px rgba(255, 180, 100, 0.6);
+            animation: flicker 0.12s infinite alternate; transition: all 0.5s ease;
+        }
+        @keyframes flicker {
+            0% { transform: translateX(-50%) scale(1) rotate(-1deg); }
+            100% { transform: translateX(-50%) scale(1.05) rotate(1deg); }
+        }
+        @keyframes blow-shrink {
+            0% { transform: translateX(-50%) scale(0.9) rotate(5deg); opacity: 0.8;}
+            100% { transform: translateX(-50%) scale(0.6) rotate(-10deg); opacity: 0.4;}
+        }
+        .candle-text { font-size: 1.2rem; font-style: italic; margin-bottom: 20px; transition: opacity 1s; }
+        .candle-wish-text {
+            font-size: 1.5rem; color: #ffe066; margin-top: 30px;
+            opacity: 0; font-style: italic; transition: opacity 1.5s; text-align: center;
+        }
+
+        /* === 04. POST-CANDLE FLOW (Hidden initially) === */
+        #post-candle-flow { display: none; width: 100%; flex-direction: column; align-items: center; }
+        
+        /* Illustration */
+        #illustration-section {
+            min-height: 100vh; display: flex; flex-direction: column;
+            justify-content: center; align-items: center; text-align: center;
+            opacity: 0; transition: opacity 2s ease; padding: 40px 20px;
+        }
+        .illustration-card {
+            background: white; padding: 20px 20px 40px 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.05); border-radius: 8px;
+            max-width: 400px; width: 100%;
+        }
+        .illustration-card img { width: 100%; border-radius: 4px; }
+        .btn-keep-going {
+            margin-top: 40px; padding: 12px 30px; border-radius: 25px;
+            border: 1px solid var(--pink-dark); background: transparent;
+            color: var(--pink-dark); font-family: 'Georgia', serif; font-size: 1rem;
+            cursor: pointer; transition: all 0.3s;
+        }
+        .btn-keep-going:hover { background: var(--pink-dark); color: white; }
+
+        /* === 05. POLAROID MEMORIES === */
+        #polaroid-section {
+            position: relative; width: 100%; min-height: 80vh; padding: 60px 0;
+            display: none; justify-content: center; flex-wrap: wrap; gap: 30px;
+        }
+        /* Falling Background */
+        #falling-bg {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: -1; overflow: hidden; opacity: 0.3; display: none;
+        }
+        .fall-pic { position: absolute; width: 80px; padding: 5px 5px 15px 5px; background: white; box-shadow: 0 4px 10px rgba(0,0,0,0.1); animation: fall linear infinite; }
+        @keyframes fall {
+            0% { transform: translateY(-100px) rotate(0deg); opacity: 0;}
+            10% { opacity: 1; }
+            90% { opacity: 1; }
+            100% { transform: translateY(110vh) rotate(45deg); opacity: 0; }
+        }
+        /* Interactive Foreground Polaroids */
+        .interactive-polaroid {
+            width: 180px; background: white; padding: 10px 10px 30px 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1); cursor: pointer;
+            transition: all 0.5s ease; position: relative;
+            height: fit-content;
+        }
+        .interactive-polaroid img { width: 100%; height: 180px; object-fit: cover; }
+        .interactive-polaroid p {
+            display: none; position: absolute; bottom: -60px; left: 50%; transform: translateX(-50%);
+            width: 250px; text-align: center; font-style: italic; font-size: 1.1rem; color: white;
+        }
+        /* Zoom State */
+        .interactive-polaroid.zoomed {
+            transform: scale(1.8) !important; z-index: 1000; box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+        .interactive-polaroid.zoomed p { display: block; }
+        #overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 999; display: none; opacity: 0; transition: opacity 0.5s;
+        }
+
+        /* === 06. HIDDEN MESSAGES === */
+        .hidden-item {
+            position: absolute; cursor: pointer; font-size: 1.5rem;
+            animation: float-small 3s ease-in-out infinite; z-index: 10;
+        }
+        .hidden-item:hover { transform: scale(1.2); }
+        @keyframes float-small { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+        /* Modal for hidden msgs */
+        #modal-msg {
+            position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8);
+            background: var(--paper); padding: 30px; border-radius: 8px; text-align: center;
+            z-index: 1001; opacity: 0; visibility: hidden; transition: all 0.3s; max-width: 300px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+        #modal-msg.show { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
+        #modal-msg button { margin-top: 20px; padding: 5px 15px; background: none; border: 1px solid var(--pink-dark); cursor: pointer; border-radius: 20px;}
+
+        /* === 07. THINGS I LOVE === */
+        #reasons-section { max-width: 600px; padding: 80px 20px; margin: 0 auto; display: none; }
+        .reason-item { margin-bottom: 40px; }
+        .reason-num { color: var(--pink-dark); font-size: 1.2rem; font-weight: bold; margin-bottom: 5px;}
+        .reason-title { font-size: 1.4rem; font-style: italic; margin: 0 0 10px 0;}
+        .reason-desc { color: var(--text-light); line-height: 1.6; margin: 0;}
+
+        /* === 08. VOICE MESSAGE === */
+        #voice-section { text-align: center; padding: 60px 20px; display: none; }
+        .voice-card { background: white; padding: 20px; border-radius: 50px; display: inline-flex; align-items: center; gap: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.05);}
+        audio { height: 40px; }
+
+        /* === 09. FINAL SECTION === */
+        #final-section { text-align: center; padding: 100px 20px 150px 20px; display: none; }
+        .final-title { font-size: 2.5rem; color: var(--pink-dark); margin-bottom: 10px; }
+        .final-msg { font-size: 1.2rem; margin-bottom: 40px; font-style: italic; }
+        #btn-final-secret { padding: 10px 20px; background: none; border: 1px dashed var(--pink-dark); color: var(--pink-dark); cursor: pointer; border-radius: 5px; margin-top: 40px;}
+    </style>
+</head>
+<body>
+
+    <!-- AUDIO FILES -->
+    <audio id="bg-music" loop preload="auto">
+        <source src="https://heavenara.hostmora.app" type="audio/mpeg">
+    </audio>
+    <audio id="voice-message">
+        <source src="" type="audio/mpeg">
+    </audio>
+
+    <button id="music-toggle">🔊</button>
+
+    <!-- 01. ENVELOPE -->
+    <div id="envelope-screen">
+        <p class="envelope-hint">You have a letter.</p>
+        <div class="envelope-wrapper" id="envelope-wrapper">
+            <div class="envelope-flap"></div>
+            <div class="envelope-front"></div>
+            <div style="position:absolute; bottom: 20px; width:100%; text-align:center; z-index:5; font-style:italic; color:white;">Tap to open</div>
+        </div>
+    </div>
+
+    <!-- 02. LETTER -->
+    <div id="letter-section">
+        <div class="paper-letter">
+            <div class="letter-content" id="letter-content">
+                <p style="font-size: 1.8rem; color: #b76e79; text-align: center; margin-bottom: 30px;">Happy 22nd Birthday! 🎉</p>
+                
+                <p>my cutest little bunny,</p>
+                <p>Happy Birthday sayangkuuu!! I can't believe you're already 22. time flies so fast huh? tapi di mataku kamu masih 22 bulan kok hihihih gemethna bayikkk.</p>
+                <p>Today is your day. Im writing this to remind me how grateful i am to have you in my life</p>
+                <p>I love you so much that you make me want to work so hard to become rich, because I wanna wife you up so bad and buy you everything you like.</p>
+                <p>Here’s to 22, and to many more birthdays together.</p>
+                
+                <p class="handwriting" style="text-align: right; margin-top: 40px;">Love always,<br>Nathan</p>
+            </div>
+        </div>
+        <p class="scroll-hint" id="scroll-hint">But I still have one thing for you... (scroll down)</p>
+    </div>
+
+    <!-- 03. CANDLE -->
+    <div id="candle-section">
+        <p class="candle-text" id="candle-inst">Hold the candle to blow it out.</p>
+        <div class="candle-wrapper" id="candle-trigger">
+            <div class="candle"><div class="flame" id="flame"></div></div>
+        </div>
+        <div class="candle-wish-text" id="wish-text-1">Make a wish...</div>
+        <div class="candle-wish-text" id="wish-text-2">I hope I get to be there for many more of your birthdays.</div>
+    </div>
+
+    <!-- 04 - 09 POST CANDLE NARRATIVE -->
+    <div id="post-candle-flow">
+        
+        <!-- 04. ILLUSTRATION -->
+        <div id="illustration-section">
+            <div class="illustration-card">
+                <img src="https://media.discordapp.net/attachments/1491685448211501077/1547330805892653126/simple_bg.png?ex=6aa3079c&is=6aa1b61c&hm=be45c37ed443d8a023001ad8af795eaeaec624f546d8025be72b28bb5788e45c&=&format=webp&quality=lossless&width=512&height=512" alt="Birthday Illustration">
+                <h2 style="color: var(--pink-dark); margin-top: 20px;">Happy Birthday, Sayang!</h2>
+                <p style="font-style: italic; color: var(--text-light);">"Today is about you."</p>
+            </div>
+            <button class="btn-keep-going" id="btn-keep-going">keep going &rarr;</button>
+        </div>
+
+        <!-- 05. POLAROIDS & 06. HIDDEN MESSAGES -->
+        <div id="falling-bg"></div>
+        <div id="overlay"></div>
+        
+        <div id="polaroid-section">
+            <p style="width: 100%; text-align: center; font-style: italic; margin-bottom: 20px;">(Tap the photos & explore a little)</p>
+            
+            <div class="interactive-polaroid" style="transform: rotate(-5deg);">
+                <img src="https://media.discordapp.net/attachments/1491685448211501077/1547331416457617488/compiled.jpg?ex=6aa3082d&is=6aa1b6ad&hm=6b026f03b74c8441e811ea6fb43e8f4adf8a9935e78d227195fd4fce2031f56f&=&format=webp&width=682&height=1024" alt="Memory 1">
+                <p>I still remember this day like it was yesterday.</p>
+            </div>
+            <div class="interactive-polaroid" style="transform: rotate(8deg); margin-top: 40px;">
+                <img src="https://media.discordapp.net/attachments/1491685448211501077/1547331417959309424/IMG-20260817-WA0033.jpg?ex=6aa3082e&is=6aa1b6ae&hm=7d4bfb2329fa130920e8824ed8c128cc40080cc7d36abc1f6fa6433e3ee40d19&=&format=webp&width=1280&height=961" alt="Memory 2">
+                <p>One of the days I realized how lucky I was to meet you.</p>
+            </div>
+            <div class="interactive-polaroid" style="transform: rotate(-3deg);">
+                <img src="https://media.discordapp.net/attachments/1491685448211501077/1547331417393070110/20260516_132314.jpg?ex=6aa3082d&is=6aa1b6ad&hm=76884378c21b6b507d1674e8d539d489200d8468795fb8a5697a1613da8f84df&=&format=webp&width=576&height=1024" alt="Memory 3">
+                <p>You looked so beautiful here, I couldn't stop staring.</p>
+            </div>
+
+            <div class="hidden-item" style="top: 10%; left: 15%;" onclick="showHiddenMsg('Something you probably don\'t know: I notice the little things you do. 🌸')">🌸</div>
+            <div class="hidden-item" style="top: 60%; right: 20%;" onclick="showHiddenMsg('I\'m proud of you. Even when you don\'t think you\'ve done enough. ✨')">✨</div>
+            <div class="hidden-item" style="bottom: 10%; left: 30%;" onclick="showHiddenMsg('You are my favorite notification. 💌')">💌</div>
+        </div>
+
+        <!-- 07. THINGS I LOVE -->
+        <div id="reasons-section">
+            <h2 style="text-align: center; color: var(--pink-dark); margin-bottom: 50px;">Things I love about you</h2>
+            
+            <div class="reason-item">
+                <div class="reason-num">01</div>
+                <h3 class="reason-title">I love the way you...</h3>
+                <p class="reason-desc">...always try your best in everything you do, even when it's hard.</p>
+            </div>
+            <div class="reason-item">
+                <div class="reason-num">02</div>
+                <h3 class="reason-title">I love when you...</h3>
+                <p class="reason-desc">...laugh at my silly jokes and do that cute little thing with your nose.</p>
+            </div>
+            <div class="reason-item">
+                <div class="reason-num">03</div>
+                <h3 class="reason-title">One thing I'll never get tired of...</h3>
+                <p class="reason-desc">...is holding your hand and listening to you talk about your day.</p>
+            </div>
+            <div class="reason-item">
+                <div class="reason-num">04</div>
+                <h3 class="reason-title">Something I hope you know...</h3>
+                <p class="reason-desc">...is that you are enough, exactly as you are.</p>
+            </div>
+        </div>
+
+        <!-- 08. VOICE MESSAGE -->
+        <div id="voice-section">
+            <p style="font-style: italic; color: var(--text-light); margin-bottom: 20px;">I made something you can listen to.</p>
+            <div class="voice-card">
+                <span>📼</span>
+                <audio controls>
+                    <source src="" type="audio/mpeg">
+                </audio>
+            </div>
+        </div>
+
+        <!-- 09. FINAL SECTION -->
+        <div id="final-section">
+            <div class="final-title">Happy Birthday, Bunny.</div>
+            <div class="final-msg">Thank you for being part of my life.</div>
+            <div class="handwriting">Nathan</div>
+            <div style="color: var(--text-light); margin-top: 10px; font-size: 0.9rem;">September 12, 2026</div>
+            
+            <button id="btn-final-secret">open one last thing</button>
+        </div>
+
+    </div>
+
+    <!-- Hidden Message Modal -->
+    <div id="modal-msg">
+        <p id="modal-text" style="font-size: 1.1rem; line-height: 1.5; color: var(--text-main);"></p>
+        <button onclick="closeHiddenMsg()">close</button>
+    </div>
+
+    <script>
+        const bgMusic = document.getElementById('bg-music');
+        const musicBtn = document.getElementById('music-toggle');
+        let isMusicPlaying = false;
+
+        /* Music Toggle Button Logic */
+        musicBtn.addEventListener('click', () => {
+            if (isMusicPlaying) { 
+                bgMusic.pause(); 
+                musicBtn.innerText = '🔇'; 
+            } else { 
+                bgMusic.play().catch(e => console.log("Play prevented")); 
+                musicBtn.innerText = '🔊'; 
+            }
+            isMusicPlaying = !isMusicPlaying;
+        });
+
+        /* === 01. ENVELOPE LOGIC === */
+        document.getElementById('envelope-wrapper').addEventListener('click', function() {
+            bgMusic.volume = 0.5;
+            bgMusic.play().then(() => {
+                isMusicPlaying = true;
+                musicBtn.innerText = '🔊';
+            }).catch(error => {
+                console.log("Audio playback blocked:", error);
+            });
+            
+            musicBtn.style.display = 'flex';
+
+            this.classList.add('open');
+            setTimeout(() => {
+                document.getElementById('envelope-screen').style.opacity = '0';
+                document.getElementById('letter-section').style.visibility = 'visible';
+                document.getElementById('letter-section').style.opacity = '1';
+                
+                setTimeout(() => { document.getElementById('envelope-screen').style.display = 'none'; }, 1500);
+                
+                const paragraphs = document.querySelectorAll('.letter-content p');
+                paragraphs.forEach((p, index) => {
+                    setTimeout(() => { p.classList.add('visible'); }, 800 * (index + 1));
+                });
+                
+                setTimeout(() => { document.getElementById('scroll-hint').style.opacity = '1'; }, 800 * (paragraphs.length + 2));
+
+            }, 1000);
+        });
+
+        /* === 02 -> 03. SCROLL REVEAL CANDLE === */
+        const candleSection = document.getElementById('candle-section');
+        window.addEventListener('scroll', () => {
+            const letterBottom = document.getElementById('letter-section').getBoundingClientRect().bottom;
+            if(letterBottom < window.innerHeight && candleSection.style.opacity == 0) {
+                candleSection.style.opacity = '1';
+                document.body.classList.add('dark-mode');
+            }
+        });
+
+        /* === 03. CANDLE BLOW LOGIC === */
+        const candleTrigger = document.getElementById('candle-trigger');
+        const flame = document.getElementById('flame');
+        const candleInst = document.getElementById('candle-inst');
+        let blowTimer; let isBlown = false;
+
+        function startBlowing(e) {
+            if (isBlown) return; e.preventDefault();
+            flame.style.animation = 'blow-shrink 0.1s infinite alternate';
+            bgMusic.volume = 0.2;
+            
+            blowTimer = setTimeout(() => {
+                isBlown = true; flame.style.opacity = '0';
+                candleInst.style.opacity = '0';
+                setTimeout(() => { flame.style.display = 'none'; }, 500);
+                
+                setTimeout(() => { document.getElementById('wish-text-1').style.opacity = '1'; }, 1000);
+                setTimeout(() => { 
+                    document.getElementById('wish-text-1').style.opacity = '0'; 
+                    document.getElementById('wish-text-2').style.opacity = '1'; 
+                }, 4000);
+                
+                setTimeout(() => { 
+                    candleSection.style.opacity = '0';
+                    setTimeout(() => {
+                        candleSection.style.display = 'none';
+                        document.body.classList.remove('dark-mode');
+                        document.getElementById('post-candle-flow').style.display = 'flex';
+                        bgMusic.volume = 0.5;
+                        
+                        setTimeout(() => { document.getElementById('illustration-section').style.opacity = '1'; }, 500);
+                    }, 1500);
+                }, 8000);
+
+            }, 2000);
+        }
+
+        function stopBlowing() {
+            if (isBlown) return; clearTimeout(blowTimer);
+            flame.style.animation = 'flicker 0.12s infinite alternate';
+            bgMusic.volume = 0.5;
+        }
+
+        candleTrigger.addEventListener('mousedown', startBlowing);
+        candleTrigger.addEventListener('touchstart', startBlowing, {passive: false});
+        window.addEventListener('mouseup', stopBlowing);
+        window.addEventListener('touchend', stopBlowing);
+
+        /* === 04. BUTTON: KEEP GOING === */
+        document.getElementById('btn-keep-going').addEventListener('click', function() {
+            this.style.display = 'none';
+            document.getElementById('polaroid-section').style.display = 'flex';
+            document.getElementById('falling-bg').style.display = 'block';
+            document.getElementById('reasons-section').style.display = 'block';
+            document.getElementById('voice-section').style.display = 'block';
+            document.getElementById('final-section').style.display = 'block';
+            
+            createFallingBackground();
+            window.scrollBy({ top: window.innerHeight, behavior: 'smooth' });
+        });
+
+        /* === 05. POLAROID LOGIC === */
+        function createFallingBackground() {
+            const bgContainer = document.getElementById('falling-bg');
+            const bgImgs = ['https://via.placeholder.com/150/ffccd5?text=bg1', 'https://via.placeholder.com/150/ffb3c1?text=bg2', 'https://via.placeholder.com/150/eac8d0?text=bg3'];
+            for(let i=0; i<8; i++) {
+                let div = document.createElement('div');
+                div.className = 'fall-pic';
+                div.style.left = Math.random() * 90 + 'vw';
+                div.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                div.style.animationDelay = (Math.random() * 5) + 's';
+                div.innerHTML = `<img src="${bgImgs[i%3]}" style="width:100%; filter:blur(1px);">`;
+                bgContainer.appendChild(div);
+            }
+        }
+
+        const overlay = document.getElementById('overlay');
+        document.querySelectorAll('.interactive-polaroid').forEach(pic => {
+            pic.addEventListener('click', function() {
+                if(this.classList.contains('zoomed')) {
+                    this.classList.remove('zoomed');
+                    overlay.style.opacity = '0';
+                    setTimeout(() => overlay.style.display = 'none', 500);
+                } else {
+                    document.querySelectorAll('.interactive-polaroid').forEach(p => p.classList.remove('zoomed'));
+                    this.classList.add('zoomed');
+                    overlay.style.display = 'block';
+                    setTimeout(() => overlay.style.opacity = '1', 50);
+                }
+            });
+        });
+        overlay.addEventListener('click', () => {
+            document.querySelectorAll('.interactive-polaroid').forEach(p => p.classList.remove('zoomed'));
+            overlay.style.opacity = '0';
+            setTimeout(() => overlay.style.display = 'none', 500);
+        });
+
+        /* === 06. HIDDEN MESSAGES LOGIC === */
+        function showHiddenMsg(text) {
+            document.getElementById('modal-text').innerText = text;
+            document.getElementById('modal-msg').classList.add('show');
+        }
+        function closeHiddenMsg() {
+            document.getElementById('modal-msg').classList.remove('show');
+        }
+
+        /* === 09. FINAL SECRET === */
+        document.getElementById('btn-final-secret').addEventListener('click', () => {
+            alert("I love you more than words can say. Happy Birthday! 💖");
+        });
+    </script>
+</body>
+</html>
